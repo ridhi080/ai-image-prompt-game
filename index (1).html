@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AI Image Prompt Game</title>
+  <!-- Optional: Import a Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link 
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" 
+    rel="stylesheet"
+  >
+
+  <style>
+    /* GLOBAL STYLES */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(to bottom right, #f7f9fc, #eef2f7);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    /* HEADER */
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    header h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      color: #4a4a4a;
+    }
+    header p {
+      font-size: 1rem;
+      color: #6f6f6f;
+    }
+
+    /* FOOTER */
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 0.9rem;
+      color: #8f8f8f;
+    }
+
+    /* BUTTONS */
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 6px;
+      padding: 12px 20px;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: background 0.3s;
+      color: #fff;
+      background: #677eff;
+    }
+    button:hover {
+      background: #556ae0;
+    }
+    .secondary-btn {
+      background: #9aa0ff;
+    }
+    .secondary-btn:hover {
+      background: #8289e0;
+    }
+    .danger-btn {
+      background: #ff5c5c;
+    }
+    .danger-btn:hover {
+      background: #e04e4e;
+    }
+
+    /* MODE SELECTION */
+    #levelSelection {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #fff;
+      border-radius: 16px;
+      padding: 30px;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      text-align: center;
+    }
+    #modeButtons {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-top: 20px;
+      justify-content: center;
+    }
+    .mode-option {
+      background: #f7f9fc;
+      border-radius: 8px;
+      padding: 20px;
+      width: 250px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    }
+    .mode-option h2 {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+      color: #4a4a4a;
+    }
+    .mode-option p {
+      font-size: 0.95rem;
+      color: #6f6f6f;
+      margin-bottom: 20px;
+    }
+
+    /* GAME SECTION */
+    #questionView {
+      background: #fff;
+      border-radius: 16px;
+      padding: 30px;
+      width: 100%;
+      max-width: 800px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+
+    .question-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      color: #4a4a4a;
+      font-weight: 600;
+    }
+    .question-header .score {
+      color: #6f6f6f;
+    }
+
+    /* The new flex container to put image on left and prompts on right */
+    .question-content {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+    }
+
+    .question-image {
+      width: 40%;
+      border-radius: 8px;
+    }
+
+    .prompt-area {
+      width: 60%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .question-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: #4a4a4a;
+    }
+
+    #optionsContainer {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .option-btn {
+      text-align: left;
+      background: #f0f2fc;
+      color: #4a4a4a;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 1rem;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .option-btn:hover {
+      background: #e0e3f8;
+    }
+    .option-btn.correct {
+      border-color: #5bcc5b; /* green border for correct answer */
+    }
+    .option-btn.wrong {
+      border-color: #ff5c5c; /* red border for wrong answer */
+    }
+
+    #inputContainer {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    #userPrompt {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+
+    .feedback {
+      margin: 10px 0;
+      font-weight: 600;
+      min-height: 1.5em;
+      color: #4a4a4a;
+    }
+    .stars {
+      font-size: 1.25rem;
+      margin-top: 10px;
+      min-height: 1.5em;
+    }
+
+    /* HINT SECTION */
+    #hintBtn {
+      margin-bottom: 10px;
+      background: #ffb84d;
+    }
+    .hint {
+      margin: 10px 0;
+      color: #4a4a4a;
+      font-size: 0.95rem;
+      font-style: italic;
+    }
+
+    /* NEXT BUTTON */
+    #nextBtn {
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    /* RESULT SECTION */
+    #resultView {
+      background: #fff;
+      border-radius: 16px;
+      padding: 30px;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      text-align: center;
+    }
+    #resultView h2 {
+      font-size: 1.5rem;
+      color: #4a4a4a;
+      margin-bottom: 10px;
+    }
+    #finalScore {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: #4a4a4a;
+    }
+    #resultView p {
+      color: #6f6f6f;
+      margin-bottom: 20px;
+    }
+    #resultButtons {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+    #shareBtn, #retryBtn, #switchLevelBtn, #switchToHardBtn {
+      width: auto;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+
+  <!-- HEADER -->
+  <header>
+    <h1>AI Image Prompt Game</h1>
+    <p id="headerText">
+      Test your AI prompting skills by guessing the prompts used to generate these images. 
+      Choose a difficulty level to begin!
+    </p>
+  </header>
+
+  <!-- LEVEL SELECTION SECTION -->
+  <section id="levelSelection">
+    <div id="modeButtons">
+      <div class="mode-option">
+        <h2>Easy Mode</h2>
+        <p>Multiple choice options to help you guess the prompt of the image.</p>
+        <button id="easyLevelBtn">Play Easy Mode</button>
+      </div>
+      <div class="mode-option">
+        <h2>Hard Mode</h2>
+        <p>Write your own prompts and see how close you get to the original. Hints available!</p>
+        <button id="hardLevelBtn">Play Hard Mode</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- GAME SECTION -->
+  <section id="questionView" class="hidden">
+    <div class="question-header">
+      <div id="questionIndex"></div>
+      <div class="score">Score: <span id="scoreDisplay">0</span></div>
+    </div>
+
+    <div class="question-content">
+      <!-- Image on the left -->
+      <img id="gameImage" class="question-image" src="" alt="AI Generated Image" />
+      
+      <!-- Prompts/Options on the right -->
+      <div class="prompt-area">
+        <div class="question-title">What prompt was used to generate this image?</div>
+
+        <!-- Multiple choice options container for easy level -->
+        <div id="optionsContainer" class="hidden"></div>
+
+        <!-- Text input container for hard level -->
+        <div id="inputContainer" class="hidden">
+          <input type="text" id="userPrompt" placeholder="Type your prompt here" />
+          <button id="submitPrompt">Submit</button>
+        </div>
+
+        <!-- Hint button + text (only for Hard Mode) -->
+        <button id="hintBtn" class="hidden">Show Hint</button>
+        <div id="hint" class="hint hidden"></div>
+
+        <div id="feedback" class="feedback"></div>
+        <div class="stars" id="stars"></div>
+        <button id="nextBtn" class="hidden">Next</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULT SECTION -->
+  <section id="resultView" class="hidden">
+    <h2>Game Complete!</h2>
+    <p id="finalScore"></p>
+    <p>Keep practicing to improve your AI prompting skills!</p>
+    <div id="resultButtons">
+      <button id="retryBtn">Play Again</button>
+      <button id="switchToHardBtn" class="secondary-btn hidden">Try Hard Mode</button>
+      <button id="switchLevelBtn" class="danger-btn">Back to Home</button>
+      <button id="shareBtn" class="secondary-btn">Share Your Score</button>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>Created for the AI community. Learn prompting in a fun, interactive way!</p>
+  </footer>
+</div>
+
+<script>
+  /******************************************************************
+   *                          GAME DATA
+   *  Added a 'hint' property for Hard Mode
+   ******************************************************************/
+  const gameData = [
+    {
+      image: "https://generatepoem.io/wp-content/uploads/2025/03/image-one.jpg.png",
+      correctPrompt: "A photorealistic image of a man painting a horse, capturing the artist's focused expression and intricate brushwork, in a bright, sunlit art studio filled with canvases and paint supplies, with a window showcasing a beautiful garden outside.",
+      options: [
+        "An oil painting image of a man sketching a portrait, the artist’s deep concentration reflected in the delicate strokes he’s making. The studio is dimly lit, with a single desk lamp illuminating the canvas, surrounded by scattered sketches and old paint jars.",
+        "An image of a man painting a flower, with the artist’s intense focus on the brushstrokes as he captures the details. The studio is filled with natural light from an overhead skylight, with canvases in various stages of completion scattered around the room.",
+        "A photorealistic image of a man painting a horse, capturing the artist's focused expression and intricate brushwork, in a bright, sunlit art studio filled with canvases and paint supplies, with a window showcasing a beautiful garden outside.",
+        "A photorealistic image of a man painting a landscape of a coastal view, with waves crashing on the shore and vibrant skies in the background. The artist's concentration is visible as he blends colors on the canvas. The studio has a warm glow from the setting sun and is filled with paint supplies."
+      ],
+      hint: "Hint: It's a photorealistic style; possibly generated with Stable Diffusion."
+    },
+    {
+      image: "https://generatepoem.io/wp-content/uploads/2025/03/Flux_Dev_A_photo_of_a_capybara_playfully_chewing_on_a_branch_s_2.jpeg",
+      correctPrompt: "A photo of a capybara playfully chewing on a branch, showcasing its soft fur and bright, curious eyes. The scene is set in a lush grassland with gentle sunlight streaming down, highlighting the vibrant green surroundings and wildflowers.",
+      options: [
+        "A photo of a capybara resting by the edge of a serene pond, its eyes half-closed in a peaceful expression. The image captures the soft texture of its fur and the tranquil setting of tall grasses and water lilies around the pond, with sunlight filtering through the trees. ",
+        "A photo of a capybara playfully chewing on a branch, showcasing its soft fur and bright, curious eyes. The scene is set in a lush grassland with gentle sunlight streaming down, highlighting the vibrant green surroundings and wildflowers.",
+        "A photo of a capybara swimming in a clear stream, its eyes sparkling with curiosity as it moves through the water. The scene is surrounded by lush greenery, with sunlight reflecting off the water's surface.",
+        "A photo of a capybara lounging in a shaded spot under a tree, its fur gleaming softly in the light. The peaceful scene includes lush grass and wildflowers, with a calm breeze rustling the leaves above, creating a tranquil and inviting atmosphere."
+      ],
+      hint: "Hint: It's a natural wildlife photo style; model might be Midjourney or similar."
+    },
+    {
+      image: "https://generatepoem.io/wp-content/uploads/2025/03/Generated-Image-March-27-2025-8_38PM.jpeg",
+      correctPrompt: "A detailed sketch of two people engaged in a lively conversation, with animated expressions and hand gestures. The setting is a cozy café with warm lighting and rustic décor, creating an inviting atmosphere. ",
+      options: [
+        "A detailed sketch of two people engaged in a lively conversation, with animated expressions and hand gestures. The setting is a cozy café with warm lighting and rustic décor, creating an inviting atmosphere. ",
+        "A detailed sketch of two people in a library, deep in conversation, with animated gestures and focused expressions. The setting features rows of bookshelves, soft lighting from a nearby desk lamp, and an atmosphere of quiet concentration.",
+        "A photo of two people sitting at a café, exchanging lively words with expressive faces and dynamic hand gestures. The scene captures the energy of the bustling city street, with a cozy atmosphere provided by small tables, potted plants",
+        "A painting of two people at an art gallery, discussing a painting with animated expressions and gesturing with excitement."
+      ],
+      hint: "Hint: It's more of a pencil/ink sketch style; possibly using a line-art model."
+    },
+    {
+      image: "https://generatepoem.io/wp-content/uploads/2025/03/Generated-Image-March-27-2025-8_47PM.jpeg",
+      correctPrompt: "A drawing of a cheerful girl with flowing brown hair, bright blue eyes, wearing a colorful sundress, blowing bubbles that shimmer in the sunlight. She is surrounded by a vibrant garden filled with blooming flowers and butterflies dancing in the air.",
+      options: [
+        "A drawing of a joyful girl with golden hair, sparkling green eyes, wearing a light pink dress, blowing dandelion seeds into the wind. She is surrounded by a lush meadow, with tall grasses swaying and a few birds fluttering overhead.",
+        "An oil painting of a carefree girl with curly red hair, bright hazel eyes, wearing a breezy white dress, skipping along a sunlit beach, with waves gently lapping at her feet. She is surrounded by seashells, seagulls, and the soft glow of the afternoon sun.",
+        "Photorealistic image of a playful girl with short black hair, wide brown eyes, wearing a vibrant floral top and denim shorts, blowing bubbles that float in the breeze. She is standing in a lively park filled with tall trees, birds perched on branches, and colorful kites soaring above.",
+        "A drawing of a cheerful girl with flowing brown hair, bright blue eyes, wearing a colorful sundress, blowing bubbles that shimmer in the sunlight. She is surrounded by a vibrant garden filled with blooming flowers and butterflies dancing in the air."
+      ],
+      hint: "Hint: It's a stylized illustration; might be a pastel or cartoon-like model."
+    }
+  ];
+
+  /******************************************************************
+   *                     GLOBAL VARIABLES
+   ******************************************************************/
+  let currentIndex = 0;
+  let score = 0;
+  let level = ""; // "easy" or "hard"
+
+  /******************************************************************
+   *                       DOM ELEMENTS
+   ******************************************************************/
+  const headerText = document.getElementById("headerText");
+  const levelSelection = document.getElementById("levelSelection");
+  const questionView = document.getElementById("questionView");
+  const resultView = document.getElementById("resultView");
+
+  const easyLevelBtn = document.getElementById("easyLevelBtn");
+  const hardLevelBtn = document.getElementById("hardLevelBtn");
+
+  const questionIndexDisplay = document.getElementById("questionIndex");
+  const scoreDisplay = document.getElementById("scoreDisplay");
+  const gameImage = document.getElementById("gameImage");
+  const optionsContainer = document.getElementById("optionsContainer");
+  const inputContainer = document.getElementById("inputContainer");
+  const userPromptInput = document.getElementById("userPrompt");
+  const submitPromptBtn = document.getElementById("submitPrompt");
+
+  const hintBtn = document.getElementById("hintBtn");
+  const hintDiv = document.getElementById("hint");
+
+  const feedback = document.getElementById("feedback");
+  const starsDiv = document.getElementById("stars");
+  const nextBtn = document.getElementById("nextBtn");
+
+  const finalScore = document.getElementById("finalScore");
+  const shareBtn = document.getElementById("shareBtn");
+  const retryBtn = document.getElementById("retryBtn");
+  const switchLevelBtn = document.getElementById("switchLevelBtn");
+  const switchToHardBtn = document.getElementById("switchToHardBtn");
+
+  /******************************************************************
+   *                     EVENT LISTENERS
+   ******************************************************************/
+  easyLevelBtn.addEventListener("click", () => {
+    level = "easy";
+    startGame();
+  });
+
+  hardLevelBtn.addEventListener("click", () => {
+    level = "hard";
+    startGame();
+  });
+
+  // For Hard level submission
+  submitPromptBtn.addEventListener("click", () => {
+    const userInput = userPromptInput.value.trim().toLowerCase();
+    const correctPrompt = gameData[currentIndex].correctPrompt.toLowerCase();
+    const similarity = getSimilarity(userInput, correctPrompt);
+
+    if (similarity >= 0.7) {
+      feedback.textContent = "Great job! That's close enough.";
+      score++;
+      updateStars();
+    } else {
+      feedback.textContent = `Not quite. The correct prompt was: "${gameData[currentIndex].correctPrompt}"`;
+    }
+    nextBtn.classList.remove("hidden");
+  });
+
+  // Hint button toggles the hint text
+  hintBtn.addEventListener("click", () => {
+    // Show the hint for the current question
+    hintDiv.textContent = gameData[currentIndex].hint;
+    hintDiv.classList.toggle("hidden");
+  });
+
+  // For Next button
+  nextBtn.addEventListener("click", () => {
+    currentIndex++;
+    if (currentIndex < gameData.length) {
+      loadQuestion();
+    } else {
+      endGame();
+    }
+  });
+
+  // For sharing score
+  shareBtn.addEventListener("click", () => {
+    const shareText = `I scored ${score} out of ${gameData.length} in the AI Prompting Game!`;
+    if (navigator.share) {
+      navigator.share({
+        title: "AI Prompting Game",
+        text: shareText,
+        url: window.location.href
+      }).then(() => {
+        console.log("Thanks for sharing!");
+      }).catch(console.error);
+    } else {
+      // Fallback: prompt the text so users can copy it manually
+      prompt("Copy this text and share it:", shareText);
+    }
+  });
+
+  // For retrying the same level
+  retryBtn.addEventListener("click", () => {
+    resultView.classList.add("hidden");
+    questionView.classList.remove("hidden");
+    currentIndex = 0;
+    score = 0;
+    updateStars();
+    loadQuestion();
+  });
+
+  // For switching back to level selection (home)
+  switchLevelBtn.addEventListener("click", () => {
+    resultView.classList.add("hidden");
+    levelSelection.classList.remove("hidden");
+    // Reset header text to original
+    headerText.textContent = 
+      "Test your AI prompting skills by guessing the prompts used to generate these images. " +
+      "Choose a difficulty level to begin!";
+  });
+
+  // For switching directly to Hard mode from result (only shown if you ended on Easy)
+  switchToHardBtn.addEventListener("click", () => {
+    level = "hard";
+    resultView.classList.add("hidden");
+    questionView.classList.remove("hidden");
+    currentIndex = 0;
+    score = 0;
+    updateStars();
+    // Update header text to Hard mode
+    headerText.textContent = 
+      "You're in Hard Mode. Type your own prompt and see how close you get!";
+    loadQuestion();
+  });
+
+  /******************************************************************
+   *                        GAME FUNCTIONS
+   ******************************************************************/
+  function startGame() {
+    // Hide level selection, show question view
+    levelSelection.classList.add("hidden");
+    questionView.classList.remove("hidden");
+    resultView.classList.add("hidden");
+
+    // Reset
+    currentIndex = 0;
+    score = 0;
+    updateStars();
+
+    // Change header text depending on chosen level
+    if (level === "easy") {
+      headerText.textContent = 
+        "You're in Easy Mode. Select the correct prompt from multiple choices!";
+    } else {
+      headerText.textContent = 
+        "You're in Hard Mode. Type your own prompt and see how close you get!";
+    }
+
+    loadQuestion();
+  }
+
+  function loadQuestion() {
+    feedback.textContent = "";
+    nextBtn.classList.add("hidden");
+    userPromptInput.value = "";
+    hintDiv.textContent = "";
+    hintDiv.classList.add("hidden");
+
+    // Show or hide the "Try Hard Mode" button on results screen based on current level
+    if (level === "easy") {
+      switchToHardBtn.classList.remove("hidden");
+    } else {
+      switchToHardBtn.classList.add("hidden");
+    }
+
+    // Update question header
+    questionIndexDisplay.textContent = `Question ${currentIndex + 1}/${gameData.length}`;
+    scoreDisplay.textContent = score;
+
+    // Display the image
+    const data = gameData[currentIndex];
+    gameImage.src = data.image;
+
+    // Handle Easy vs Hard UI
+    if (level === "easy") {
+      optionsContainer.innerHTML = "";
+      optionsContainer.classList.remove("hidden");
+      inputContainer.classList.add("hidden");
+      hintBtn.classList.add("hidden");
+
+      // Build multiple-choice buttons
+      data.options.forEach((option) => {
+        const btn = document.createElement("button");
+        btn.className = "option-btn";
+        btn.textContent = option;
+        btn.addEventListener("click", () => {
+          // Disable all buttons to prevent multiple clicks
+          const allOptionButtons = document.querySelectorAll(".option-btn");
+          allOptionButtons.forEach((b) => b.disabled = true);
+
+          if (option.toLowerCase() === data.correctPrompt.toLowerCase()) {
+            feedback.textContent = "Correct!";
+            btn.classList.add("correct");
+            score++;
+            updateStars();
+          } else {
+            feedback.textContent = `Incorrect! The correct prompt was: "${data.correctPrompt}"`;
+            btn.classList.add("wrong");
+          }
+          nextBtn.classList.remove("hidden");
+        });
+        optionsContainer.appendChild(btn);
+      });
+    } else {
+      // Hard level
+      optionsContainer.classList.add("hidden");
+      inputContainer.classList.remove("hidden");
+      hintBtn.classList.remove("hidden");
+    }
+  }
+
+  function endGame() {
+    // Hide question view, show result view
+    questionView.classList.add("hidden");
+    resultView.classList.remove("hidden");
+
+    finalScore.textContent = `Your Score: ${score}/${gameData.length}`;
+  }
+
+  function updateStars() {
+    // Display star emojis for each point
+    let stars = "";
+    for (let i = 0; i < score; i++) {
+      stars += "⭐";
+    }
+    starsDiv.textContent = stars;
+    scoreDisplay.textContent = score;
+  }
+
+  // A simple similarity function comparing matching words ratio
+  function getSimilarity(input, correct) {
+    const inputWords = input.split(" ").filter(Boolean);
+    const correctWords = correct.split(" ").filter(Boolean);
+
+    let matchCount = 0;
+    inputWords.forEach(word => {
+      if (correctWords.includes(word)) {
+        matchCount++;
+      }
+    });
+    return matchCount / correctWords.length;
+  }
+</script>
+</body>
+</html>
